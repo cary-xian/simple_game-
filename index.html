@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>看你鼠标有多快-一个有意思的小游戏</title>
+    <meta name="description" content="这是一个休闲小游戏，在你休闲的时候每每喝上可乐咖啡，玩上我们的小游戏，世间美好将会与你环环相扣">
+    <meta name="keywords" content="休闲小游戏、页游、好玩的游戏、无聊、有趣、休闲" >
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            background: pink;
+            text-align: center;
+        }
+        h1{
+            margin: 20px auto;
+            width: 232px;
+            height: 45px;
+            color: white;
+            font-size: 30px;
+            font-family: KiTi;
+            font-weight: 530; 
+        }  
+        h5{
+            margin: 20px auto;
+            width: 463px;
+            height: 27px;
+            color: white;
+            font-size: 15px;
+            font-family: KiTi;
+            font-weight: 400;
+     
+        }
+        input[name='switch']{
+            width: 154px;
+            height: 45px;
+            margin: 18px auto;
+            border: 2px solid black;
+            color: white;
+            font-size: 20px;
+            background: rgb(166, 62, 44) ;
+            border-radius: 5px;
+            /* box-shadow: offset-x offset-y blur spread color inset;
+         参数解释：
+        offset-x：必需，取值正负都可。offset-x水平阴影的位置。
+        offset-y：必需，取值正负都可。offset-y垂直阴影的位置。
+        blur:可选，只能取正值。blur-radius阴影模糊半径，0即无模糊效果，值越大阴影边缘越模糊。
+        spread：可选，取值正负都可。spread代表阴影的周长向四周扩展的尺寸，正值，阴影扩大，负值阴影缩小。
+        color:可选。阴影的颜色。如果不设置，浏览器会取默认颜色，通常是黑色，但各浏览器默认颜色有差异，建议不要省略。可以是rgb(250,0,0)，也可以是有透明值的rgba(250,0,0,0.5)。
+        inset:可选。关键字，将外部投影(默认outset)改为内部投影。inset 阴影在背景之上，内容之下。 */
+            /* box-shadow: X轴偏移量 Y轴偏移量 [阴影模糊半径] [阴影扩展] [阴影颜色] [投影方式]; */
+            box-shadow:  10px 10px 20px  #aaa;
+        }
+        div[name="border"]{      
+            margin: 20px auto;
+            width: 1017px;
+            height: 600px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+       
+        }
+        div[name="info"]{
+            padding-top:10px;
+            padding-left: 10px;
+            width: 163px;
+            height: 100%;
+            border-right: 3px solid #eee;
+            background: #fff;
+            color: black;
+        }
+        div[name="game"]{
+            position: relative;
+            width: 850px;
+            height: 100%;
+            background: #fff;
+            padding: 0;
+            translate: all 1s;
+        }
+        p{
+            display: block;
+            text-align: left;
+            font-size: 20px;
+            color:#aaa;
+        }
+        p[name="text"]:last-child{
+            margin-top:10px;
+        }
+        span{
+            
+            color: red;
+            font-size: 26px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>你的鼠标有多快?</h1>
+        <h5>游戏说明:点击“开始游戏”,随机掉下表情,点中它，别让表情掉下来!!!</h5>
+        <input type="button" name="switch" @click="btn_click()" value="开始游戏">
+        <div name="border">
+          <div name="info">
+            
+            <p name="text">得分：<span >{{score}}</span>分</p>
+            <p name="text" >失分：<span >{{lostscore}}</span>分</p>
+          </div>
+          <div name="game">
+            
+          </div>
+        </div>
+    </div>
+    <script>
+        var vm=new Vue({
+            el:'#app',
+            data:function(){
+                return{
+                    score:0,
+                    lostscore:0,
+                    positons:[
+                        '0 0',
+                        '-165px 0',
+                        '-329px 0',
+                        '-513px 0',
+                        '0 -165px',
+                        '-165px -165px',
+                        '-329px -165px',
+                        '-513px -165px',
+                        '0 -329px',
+                        '-165px -329px',
+                        '-329px -329px',
+                        '-513px -329px',
+                        '0 -513px',
+                        '-165px -513px',
+                        '-329px -513px',
+                        '-513px -513px'
+                    ],
+                    t:1,
+                    flag:false
+                }
+            },
+            //data中的数据和计算属性是不支持异步的
+            methods:{
+                btn_click: function(){
+                    var random=Math.random();
+                    var btn=document.querySelector("[name='switch']");
+                    btn.value="游戏进行中 ....";
+                    btn.style.background="#ddd"; //为带有disabled的input框添加背景颜色     或者        opacity:0.5
+                    btn.style.pointer="events:none";//鼠标点击不可修改
+                    btn.style.cursor="not-allowed";
+                    // 主逻辑
+                    // 1.随机生成一个表情
+                    var e=this.gen();
+                    // 2.在指定位置显示它
+                    var index=Math.floor( random*(this.positons.length-0));
+                    e.css({"background-position":this.positons[index]});
+                    var p=Math.floor( 1+random*(8));
+                    e.css({"position":"absolute"});
+                    e.css({"left":p*10+"%"});
+                    this.addview($("[name='game']"),e);    
+                    // 3.移动和设置鼠标监听
+                    // this.t=1;
+                    this.move(e);
+                    e[0].onclick=()=>{
+                        this.sway(e);
+                        e.css({"top":this.t*100+"px"});
+                        e.remove();
+                        this.score++;
+                        this.flag=true;
+                        // console.log(this.flag);
+                        // console.log(this.t);
+                        this.btn_click();
+                    }
+                    
+                    
+            
+                     
+                },
+                gen:function(){
+                    // 随机生成表情图片
+                    var box=$("<div></div>");
+                    box.css({"width":"165px","height":"165px","zoom": ".3","margin":"0"});
+                    box.css({"background-image":"url(img/bqb.png)"});
+                    return box;
+                },
+                addview:function(parent,son){
+                    //  显示
+                    parent.append(son);
+                },
+                move: function(obj){
+                    //  移动
+                    var i=setInterval(()=>{
+                        console.log(this.t);
+                        // console.log(this.flag);
+                        obj.css({"transform":"translateY("+this.t*100+"px)"});
+                        this.t++;
+                        clearInterval(i);
+                        if(this.flag==true) {
+                            clearInterval(i);
+                            this.t=1;
+                            this.flag=false;
+                        }else if(this.t<19)
+                        {
+                            this.move(obj);
+                        }else{
+                            console.log("超出了");
+                            this.sway(obj);
+                            this.lostscore++;
+                            this.t=1;
+                            obj.remove();
+                             if(this.lostscore<10){
+                                this.btn_click();
+                             }else{
+                                alert("游戏结束！你的得分为："+this.score);
+                                var btn=document.querySelector("[name='switch']");
+                                btn.value="开始游戏";
+                                btn.style.background="rgb(166, 62, 44)"; //为带有disabled的input框添加背景颜色     或者        opacity:0.5
+                                
+                             }
+                        }          
+                    },1000);
+                },
+                sway:function(obj){
+                    // 晃动
+                    // console.log(obj);
+                    return new Promise((resolve)=>{
+                        resolve();
+                    }).then(
+                        ()=>{
+                            setTimeout(()=>obj.css({"transform":"translateX(-100px)"}),0);
+                            setTimeout(()=>obj.css({"transform":"translateX(100px)"}),100);
+                            setTimeout(()=>obj.css({"transform":"translateX(0)"}),200);
+                            
+                        }
+                    );
+                   
+                    
+                }
+            },
+            mounted:function(){
+                //  alert("客官，你好！我们一起游戏吧");
+            }
+        });
+</script>
+</body>
+</html>
